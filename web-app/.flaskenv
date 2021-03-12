@@ -1,3 +1,4 @@
 export FLASK_APP=app.py
 export FLASK_ENV=development
-export FLASK_RUN_PORT=8887
+export XLA_FLAGS=--xla_hlo_profile
+export CUDA_VISIBLE_DEVICES=0

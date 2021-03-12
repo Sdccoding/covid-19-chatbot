@@ -1,28 +1,15 @@
 #!/usr/bin/env python3
 # encoding: UTF-8
 
-"""
-Filename: generate_response.py
-Author:   David Oniani
-E-mail:   oniani.david@mayo.edu
-
-Description:
-
-    This is an implementation of an interactive chatbot that answer questions
-    related to COVID-19/Novel Coronavirus.
-
-    It relies on two state-of-the-art models: GPT-2 and USE (Universal Sentence
-    Encoder).
-
-    We use 774M model of GPT-2.
-"""
-
 import sys
 
 sys.path.insert(1, "../src/")
 
 import json
 import os
+#os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import re
 
 import fire
@@ -37,6 +24,9 @@ import sample
 import similarity
 import tflex
 
+
+gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
+session = tf.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
 # String, which MODEL to use
 MODEL_NAME = "774M"
@@ -76,16 +66,23 @@ CHECKPOINT = "../models/model-2500.hdf5"
 
 def chatbot_response(question: str) -> str:
     """Respond to a question."""
-
+    
     models_dir = os.path.expanduser(os.path.expandvars(MODELS_DIR))
+    
+    print(models_dir)
+    
 
     assert NSAMPLES % BATCH_SIZE == 0
+    
 
     enc = encoder.get_encoder(MODEL_NAME, dirback=True)
+    
     hparams = model.default_hparams()
+    
 
     with open(os.path.join(models_dir, MODEL_NAME, "hparams.json")) as file:
         hparams.override_from_dict(json.load(file))
+    
 
     if LENGTH is None:
         length = hparams.n_ctx // 2
@@ -96,11 +93,12 @@ def chatbot_response(question: str) -> str:
                 hparams.n_ctx
             )
         )
-
-    with tf.Session(graph=tf.Graph()) as sess:
-        context = tf.placeholder(tf.int32, [BATCH_SIZE, None])
+    
+    with tf.compat.v1.Session(graph=tf.Graph()) as sess:
+        
+        context =  tf.compat.v1.placeholder(tf.int32, [BATCH_SIZE, None])
         np.random.seed(SEED)
-        tf.set_random_seed(SEED)
+        tf.compat.v1.set_random_seed(SEED)
         output = sample.sample_sequence(
             hparams=hparams,
             length=length,
@@ -109,11 +107,16 @@ def chatbot_response(question: str) -> str:
             temperature=TEMPERATURE,
             top_k=TOP_K,
         )
-
+        
         saver = tflex.Saver()
+        
         saver.restore(sess, CHECKPOINT)
+        #tf.global_variables_initializer()
+        
+
 
         context_tokens = enc.encode(question)
+        
 
         response: str = ""
         for _ in range(NSAMPLES // BATCH_SIZE):
@@ -123,7 +126,7 @@ def chatbot_response(question: str) -> str:
                     context: [context_tokens for _ in range(BATCH_SIZE)]
                 },
             )[:, len(context_tokens) :]
-
+            
             # Build the answers string
             answers = ""
             for idx in range(BATCH_SIZE):
@@ -142,4 +145,4 @@ def chatbot_response(question: str) -> str:
             except Exception:
                 response += " ".join(final_answers)
 
-        return response
+    return response

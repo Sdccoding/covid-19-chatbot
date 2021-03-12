@@ -49,7 +49,7 @@ def get_session_target(target="auto"):
     return target
 
 
-class Session(tf.Session):
+class Session(tf.compat.v1.Session):
     def __init__(self, target="auto", graph=None, config=None, init_tpu=False):
         super().__init__(
             get_session_target(target), graph=graph, config=config
@@ -202,7 +202,7 @@ def load_weights(ckpt, session=None, var_list=None, reshape=False):
 
 def load_variables(ckpt, session=None, var_list=None, reshape=False):
     session = session or tf.get_default_session()
-    vs = var_list or tf.trainable_variables()
+    vs = var_list or tf.compat.v1.trainable_variables()
     with h5py.File(ckpt, "r") as f:
         for variables in tqdm.tqdm(list(split_by_params(vs))):
             values = [
@@ -251,7 +251,7 @@ class Saver(object):
         builder=None,
         defer_build=False,
         allow_empty=False,
-        write_version=tf.train.SaverDef.V2,
+        write_version=tf.compat.v1.train.SaverDef.V2,
         pad_step_number=False,
         save_relative_paths=False,
         filename=None,
@@ -272,6 +272,7 @@ class Saver(object):
         self.save_relative_paths = save_relative_paths
         self.filename = filename
         self.checkpoints = []
+        self.config = tf.ConfigProto(gpu_options= tf.GPUOptions(allow_growth=True))
 
     def restore(self, sess, save_path):
         if save_path.endswith(".ckpt") or os.path.isfile(

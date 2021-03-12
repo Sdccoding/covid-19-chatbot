@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#/usr/bin/env python3
 
 from flask import Flask, request, render_template
 from generate_response import chatbot_response
@@ -15,5 +15,6 @@ def index():
 
     # POST
     text = request.form.get("textarea")
+    print(text)
     response = chatbot_response(text)
-    return render_template("chatbot.html", response=response)
+    return render_template("chatbot.html", response=response)                   

@@ -2,8 +2,7 @@
 | QUESTION                                                                    |
 -------------------------------------------------------------------------------
 
-What is known about transmission, incubation, and environmental stability of
-COVID-19?
+What is known about transmission, incubation, and environmental stability of COVID-19?
 
 -------------------------------------------------------------------------------
 | ANSWER #0                                                                   |

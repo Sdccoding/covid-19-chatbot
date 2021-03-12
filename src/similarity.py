@@ -90,7 +90,7 @@ def use_filter(
         num_sentences = len(answer_list)
 
     # Load USE (Universal Sentence Encoder) version 3 - large
-    module_url = "https://tfhub.dev/google/universal-sentence-encoder-large/3"
+    module_url = "universal-sentence-encoder-large_3"
     print("Loading model from {}".format(module_url))
     embed = hub.Module(module_url)
 
